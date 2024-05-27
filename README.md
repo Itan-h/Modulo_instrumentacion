@@ -8,4 +8,4 @@ Si se desea cambiar el funcionamiento del modulo solo es necesario cambiar la es
 
 Dentro de los archivos se puede observar que se han importado algunas librerias.
 
-La libreria para el manejo de la pantalla OLED TFT debe ser descargada del siguiente link (creditos russhughes), se presentan los archivos en crudo .C o a manera de firmware .bin, se recomiendo usar la segunada opción. Para la utilización del firmware es necesario usar alguna herramienta para grabarlo en el microcontrolador
+La libreria para el manejo de la pantalla OLED TFT debe ser descargada del siguiente link (creditos russhughes) https://github.com/russhughes/st7789_mpy/tree/master, se presentan los archivos en crudo .C o a manera de firmware .bin, se recomiendo usar la segunada opción. Para la utilización del firmware es necesario usar alguna herramienta para grabarlo en el microcontrolador
