@@ -1,6 +1,6 @@
 from machine import Pin, time
 import sensores as s
-from rotary_irq import RotaryIRQ
+from extras.rotary_irq import RotaryIRQ
 
 valve = s.Valvula(4)
 sensor = s.Caudalimetro(9)
@@ -17,8 +17,6 @@ encoder = RotaryIRQ(pin_num_clk=21,
               max_val=25,
               reverse=True,
               range_mode=RotaryIRQ.RANGE_WRAP)
-
-
 
 while True:
     time.sleep(0.25)

@@ -1,5 +1,5 @@
 from machine import Pin
-from rotary import Rotary
+from extras.rotary import Rotary
 from sys import platform
 
 _esp8266_deny_pins = [16]

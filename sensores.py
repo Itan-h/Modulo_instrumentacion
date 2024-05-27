@@ -110,10 +110,10 @@ class Bomba:
         self.error1 = 0
         self.error2 = 0
 
-        self.Kp = 10
-        self.Ki = 20
-        self.Kd = 0.01
-        self.Tm = 0.25
+        self.Kp = 1
+        self.Ki = 3
+        self.Kd = 0.05
+        self.Tm = 1
     
     def on_pid(self, set_point, procces_v):
         self.sp = set_point
