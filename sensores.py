@@ -89,7 +89,6 @@ class Caudalimetro:
         self.ltprh=(self.get_freq()*60)/7.5
         return self.ltprh
 
-
 class Valvula:
     def __init__(self, pin):
         self.pin = Pin(pin, Pin.OUT)
@@ -230,7 +229,7 @@ class MAX6675:
 
         return self._last_read_temp
 
-class resistencia():
+class resistencia:
     def __init__(self, pin):
         self.pin=Pin(pin, Pin.OUT)
         
