@@ -17,13 +17,12 @@ import vga1_bold_16x32 as font2
 
 class Ultrasonico:
 
-    def __init__(self, echo, trigger, echo_timeout, top):
+    def __init__(self, echo, trigger, top, echo_timeout = 30000):
         self.echo = Pin(echo, Pin.IN)
         self.trigger = Pin(trigger, Pin.OUT)
         self.echo_timeout = echo_timeout
         self.top = top
 
-    def measure(self):
         self.trigger.off()
         time.sleep_us(5)
         self.trigger.on()
@@ -31,13 +30,13 @@ class Ultrasonico:
         self.trigger.off()
 
         duration = machine.time_pulse_us(self.echo, 1, self.echo_timeout)
-        self.distance = 343.2*duration/20000
+        self.distance = 343.2*duration/20000 #cm
     
-    def liters(self, lenght, width):
-        self.volumen = ((lenght*width)*(self.top-self.distance))*0.001
-        return self.volumen
+    def liters(self, lenght, width, l=0):
+        self.volumen = (((lenght*width)*(self.top-self.distance))*0.001)+l #litros para calibrar
+        return self.volumen 
     
-    def percent(self, top):
+    def percent(self):
         percent = self.volumen*100/self.top
         return percent
 
