@@ -8,13 +8,13 @@ from extras import oled
 #-----------------------------------------------------------------------------------------------
 
 #caudal
-valve = s.Valvula(4)
+valve = s.Trasductor_digital(4)
 sensor_caudal = s.Caudalimetro(9)
 bomba = s.Bomba(15)
 #temperatura
 max1 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 1
 max2 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 2
-resistencia = s.resistencia(3)
+resistencia = s.trasductor_digital(3)
 #nivel
 ultrasonic_1 = s.Ultrasonico(12, 13)
 ultrasonic_2 = s.Ultrasonico(12, 13)
@@ -28,7 +28,9 @@ sp2_temp = 25
 
 sp_nivel = 8
 
-def get_data():
+ult1=ultrasonic_1.begin()
+ult2=ultrasonic_2.begin()
+def measuring():
     global tempe1
     global tempe2
     global ult1
@@ -43,8 +45,8 @@ def get_data():
 
     tempe1=max1.read()
     tempe2=max2.read()
-    ult1=ultrasonic_1.liters()
-    ult2=ultrasonic_1.liters()
+    ult1 = ultrasonic_1.liters(ult1, 0.3)
+    ult2 = ultrasonic_2.liters(ult2, 0.3)
     caudal=sensor_caudal.get_lthr()
     hz1t1 = hzt1_tanque1.state()
     hz2t1 = hzt2_tanque1.state()
@@ -132,9 +134,9 @@ def set_display():
     display.data_discrete(5, 155, 178, 236, 93, "Ultrasonico 2:", str(ult2))
 
     display.data_logic(5, 205, 'H1t1', hz1t1)
-    display.data_logic(105, 205, 'H2t1', hz2t1)
+    display.data_logic(105, 205, 'H2t1', not(hz2t1))
     display.data_logic(200, 205, 'H1t2', hz1t2)
-    display.data_logic(5, 255, 'H2t2', hz2t2)
+    display.data_logic(5, 255, 'H2t2', not(hz2t2))
     display.data_logic(105, 255, 'Rest', res)
     display.data_logic(200, 255, 'Valv', valv)
 
@@ -145,25 +147,23 @@ while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)):
 
 while True:
     time.sleep(0.25)
-    get_data()
+    measuring()
     blink()
     set_display()
     if((tempe2 <= sp2_temp) and (hz2t2 == 1)):
         if(ult1 <= 9.5):
             pass
             bomba.on_pid()
-            #Obtener litros totales y presentar en OLED
         else:
             bomba.off()
             if(tempe1 <= sp1_temp):
                 resistencia.set_state(1)
             else:
                 resistencia.set_state(0)
-                if((hz2t1== 1) and (hz1t2 != 1)):
+                if((hz2t1 != 1) and (hz1t2 != 1)):
                     valve.set_state(1)
                 else:
                     valve.set_state(0)
 
     else:
-        display.error(10, 10, 'Tanque 2 caliente')
-    
+        display.error(10, 10, 'Tanque 2 caliente o vacio')

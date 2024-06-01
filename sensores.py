@@ -5,12 +5,14 @@ import machine, time
 
 class Ultrasonico:
 
-    def __init__(self, echo, trigger, top=43, echo_timeout = 30000):
+    def __init__(self, echo, trigger, top=43, echo_timeout = 30000, lenght=14.8, width=15, l=0):
         self.echo = Pin(echo, Pin.IN)
         self.trigger = Pin(trigger, Pin.OUT)
         self.echo_timeout = echo_timeout
         self.top = top
-        
+        self.lenght = lenght
+        self.width = width
+        self.l = l
 
         self.trigger.off()
         time.sleep_us(5)
@@ -21,14 +23,20 @@ class Ultrasonico:
         duration = machine.time_pulse_us(self.echo, 1, self.echo_timeout)
         self.distance = 343.2*duration/20000 #cm
 
-        self.liters()
-    
-    def liters(self, lenght=14.8, width=15, l=0):
-        self.volumen = (((lenght*width)*(self.top-self.distance))*0.001)+l #litros para calibrar
+    def begin(self):
+        start = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l #litros para calibrar
+        return start
+
+    def liters(self, ref, margin):
+        read = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l 
+        if((read > ref+margin) or (read < ref-margin)):
+            self.volumen = read
+        else:
+            self.volumen = ref
         return self.volumen #14.8, 15, 43
     
     def percent(self):
-        percent = self.liters*100/self.top
+        percent = self.liters()*100/self.top
         return percent
 
 class Sensor_switch:
@@ -37,6 +45,8 @@ class Sensor_switch:
         self.sensor = Pin(sensor, Pin.IN, Pin.PULL_UP)
 
     def state(self):
+        input = not(self.sensor.value())
+        time.sleep_ms(600)
         input = not(self.sensor.value())
         return input
 
@@ -64,7 +74,7 @@ class Caudalimetro:
         self.ltprh=(self.get_freq()*60)/7.5
         return self.ltprh
 
-class Valvula:
+class Trasductor_digital:
     def __init__(self, pin):
         self.pin = Pin(pin, Pin.OUT)
 
@@ -203,14 +213,3 @@ class MAX6675:
             self._last_read_temp = value * 0.25
 
         return self._last_read_temp
-
-class resistencia:
-    def __init__(self, pin):
-        self.pin=Pin(pin, Pin.OUT)
-        
-    def set_state(self, bool):
-        self.pin.value(bool)
-
-    def get_state(self):
-        return self.pin.value()
-        
