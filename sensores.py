@@ -2,14 +2,13 @@ from machine import Pin, UART, PWM
 import machine, time
 
 class Ultrasonico:
-
     def __init__(self, echo, trigger, top=43, echo_timeout = 30000):
         self.echo = Pin(echo, Pin.IN)
         self.trigger = Pin(trigger, Pin.OUT)
         self.echo_timeout = echo_timeout
         self.top = top
         
-
+    def get_distance(self):
         self.trigger.off()
         time.sleep_us(5)
         self.trigger.on()
@@ -19,15 +18,15 @@ class Ultrasonico:
         duration = machine.time_pulse_us(self.echo, 1, self.echo_timeout)
         self.distance = 343.2*duration/20000 #cm
 
-        self.liters()
+        return self.distance
     
     def liters(self, lenght=14.8, width=15, l=0):
-        self.volumen = (((lenght*width)*(self.top-self.distance))*0.001)+l #litros para calibrar
+        self.volumen = (((lenght*width)*(self.top-self.get_distance()))*0.001)+l #litros para calibrar
         return self.volumen #14.8, 15, 43
     
     def percent(self):
-        percent = self.liters*100/self.top
-        return percent
+        self.percent1 = (self.volumen*100)/(self.top*15*15*0.001)
+        return self.percent1
 
 class Sensor_switch:
 

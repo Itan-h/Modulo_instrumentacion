@@ -26,7 +26,13 @@ encoder = rotary_irq.RotaryIRQ(pin_num_clk=21,
                 max_val=25,
                 reverse=True,
                 range_mode=rotary_irq.RotaryIRQ.RANGE_WRAP)
-display = oled.Display(1, 2, 3, 4, 5, 6, 7)
+
+display = oled.Display(sck=Pin(18), 
+                       mosi=Pin(23),
+                       reset=Pin(5,Pin.OUT),
+                       dc=Pin(19,Pin.OUT),
+                       backlight=Pin(26,Pin.OUT), 
+                       id=2)
 
 sp1_temp = 50
 sp2_temp = 25
