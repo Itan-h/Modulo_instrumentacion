@@ -1,8 +1,6 @@
 from machine import Pin, UART, PWM
 import machine, time
 
-
-
 class Ultrasonico:
 
     def __init__(self, echo, trigger, top=43, echo_timeout = 30000):
@@ -46,7 +44,6 @@ class Caudalimetro:
         self.uart.init(115200, bits=8, parity=None, stop=1)
         self.freq = 0
         self.ltprh = 0
-        self.accumulated = 0
         self.get_freq()
 
     def get_freq(self):
@@ -83,7 +80,7 @@ class Bomba:
         self.error = 0
         self.error1 = 0
         self.error2 = 0
-
+        #Constantes proporcional, integral y derivativa
         self.Kp = 1
         self.Ki = 3
         self.Kd = 0.05
@@ -92,21 +89,26 @@ class Bomba:
     def on_pid(self, set_point, procces_v):
         self.sp = set_point
         self.error = self.sp - procces_v
-        
+        #Ecuación de diferencias(transformada Z de la ecuacion del control PID)
         self.cv = self.cv1 + (self.Kp + self.Kd / self.Tm) * self.error + (-self.Kp + self.Ki * self.Tm - 2 * self.Kd / self.Tm) * self.error1 + (self.Kd / self.Tm) * self.error2
         self.cv1 = self.cv
         self.error2 = self.error1
         self.error1 = self.error
 
-        if self.cv > 360:
-            self.cv = 360
+        if self.cv > 10000:
+            self.cv = 10000
         if self.cv < 8:
             self.cv = 8
         
-        self.pwm.duty_u16(int(self.cv * (65535 / 360)))
+        self.pwm.duty_u16(int(self.cv * (65535 / 10000)))
         
     def off(self):
         self.pwm.duty(0)
+        self.cv = 0
+        self.cv1 = 0
+        self.error = 0
+        self.error1 = 0
+        self.error2 = 0
 
     def get_cv(self):
         return self.cv
