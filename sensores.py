@@ -26,12 +26,16 @@ class Ultrasonico():
         self.start = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l #litros para calibrar
         return self.start
     
-    def liters(self, ref, lenght=14.8, width=15, l=0):
-        read = (((lenght*width)*(self.top-self.get_distance()))*0.001)+l #litros para calibrar
+    def liters(self, ref, lenght=14.8, width=15, l=0.7, c = 0.5):
+        read = (((lenght*width)*(self.top-self.get_distance()))*0.001) #litros para calibrar
         if((read > ref+self.margin) or (read < ref-self.margin)):
             self.volumen = read
         else:
             self.volumen = ref
+        if(self.volumen > 5):
+            self.volumen = self.volumen+0.7
+        if(self.volumen < c):
+            self.volumen = 0
         return self.volumen #14.8, 15, 43
     
     def on_off(self, ht, volumen):
@@ -146,7 +150,7 @@ class MAX6675:
         :param so: SO (data) pin, must be configured as Pin.IN
         """
         # Thermocouple
-        self.sck = Pin(sck, Pin.IN)
+        self.sck = Pin(sck, Pin.OUT)
         self.sck.value(0)
 
         self.cs = Pin(cs, Pin.OUT)
