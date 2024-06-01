@@ -1,12 +1,8 @@
-from machine import Pin, time
+from machine import Pin
 import sensores as s
-from extras.rotary_irq import RotaryIRQ
-from extras import BlynkLib
+from extras import BlynkLib, oled, rotary_irq
 import network, urequests, time, machine
-from extras import oled
-
 #-----------------------------------------------------------------------------------------------
-
 #caudal
 valve = s.Trasductor_digital(4)
 sensor_caudal = s.Caudalimetro(9)
@@ -16,16 +12,31 @@ max1 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 1
 max2 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 2
 resistencia = s.trasductor_digital(3)
 #nivel
-ultrasonic_1 = s.Ultrasonico(12, 13)
-ultrasonic_2 = s.Ultrasonico(12, 13)
+ultrasonic_1 = s.Ultrasonico(12, 13, 0.1)
+ultrasonic_2 = s.Ultrasonico(12, 13, 0.1)
 hzt1_tanque1 = s.Sensor_switch(6)
 hzt2_tanque1 = s.Sensor_switch(7)
 hzt1_tanque2 = s.Sensor_switch(8)
 hzt2_tanque2 = s.Sensor_switch(9)
 
+btn = Pin(18, Pin.IN, Pin.PULL_UP)#boton del encoder
+encoder = rotary_irq.RotaryIRQ(pin_num_clk=21,
+                pin_num_dt=19,
+                min_val=0,
+                max_val=25,
+                reverse=True,
+                range_mode=rotary_irq.RotaryIRQ.RANGE_WRAP)
+
+display = oled.Display(sck=Pin(18), 
+                       mosi=Pin(23),
+                       reset=Pin(5,Pin.OUT),
+                       dc=Pin(19,Pin.OUT),
+                       backlight=Pin(26,Pin.OUT), 
+                       id=2)
+
 sp1_temp = 50
 sp2_temp = 25
-
+sp_caudal = 220 #lt/hr
 sp_nivel = 8
 
 ult1=ultrasonic_1.begin()
@@ -45,8 +56,8 @@ def measuring():
 
     tempe1=max1.read()
     tempe2=max2.read()
-    ult1 = ultrasonic_1.liters(ult1, 0.3)
-    ult2 = ultrasonic_2.liters(ult2, 0.3)
+    ult1 = ultrasonic_1.liters(ult1)
+    ult2 = ultrasonic_2.liters(ult2)
     caudal=sensor_caudal.get_lthr()
     hz1t1 = hzt1_tanque1.state()
     hz2t1 = hzt2_tanque1.state()
@@ -54,8 +65,6 @@ def measuring():
     hz2t2 = hzt2_tanque2.state()
     res = resistencia.get_state()
     valv = valve.get_state()
-
-#-----------------------------------------------------------------------------------------------
 
 # WiFi credentials
 ssid = 'POCO X4 GT'
@@ -87,7 +96,6 @@ def reconectar():
     machine.reset()
 
 def blink():
-
     try:
         if (time.time() - ultima_peticion) > intervalo_peticiones:
             tempe1=round(tempe1, 1)
@@ -113,16 +121,6 @@ def blink():
 
     except OSError as e:
         reconectar()
-#-----------------------------------------------------------------------------------------------
-
-btn = Pin(18, Pin.IN, Pin.PULL_UP)#boton del encoder
-encoder = RotaryIRQ(pin_num_clk=21,
-                pin_num_dt=19,
-                min_val=0,
-                max_val=25,
-                reverse=True,
-                range_mode=RotaryIRQ.RANGE_WRAP)
-display = oled.Display(1, 2, 3, 4, 5, 6, 7)
 
 # while((max1.error() == 1) or (max2.error() == 1)): #error en el sensor 
 #     pass
@@ -140,8 +138,6 @@ def set_display():
     display.data_logic(105, 255, 'Rest', res)
     display.data_logic(200, 255, 'Valv', valv)
 
-#-----------------------------------------------------------------------------------------------
-
 while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
     display.error(10, 10, 'Ambos tanques llenos')
 
@@ -151,9 +147,11 @@ while True:
     blink()
     set_display()
     if((tempe2 <= sp2_temp) and (hz2t2 == 1)):
-        if(ult1 <= 9.5):
+        if(ultrasonic_1.on_off() == 1):
             pass
             bomba.on_pid()
+            bomba.on_pid(set_point=sp_caudal, procces_v=caudal)
+            #Obtener litros totales y presentar en OLED
         else:
             bomba.off()
             if(tempe1 <= sp1_temp):

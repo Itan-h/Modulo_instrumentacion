@@ -1,19 +1,18 @@
 from machine import Pin, UART, PWM
 import machine, time
 
-
-
-class Ultrasonico:
-
-    def __init__(self, echo, trigger, top=43, echo_timeout = 30000, lenght=14.8, width=15, l=0):
+class Ultrasonico():
+    def __init__(self, echo, trigger, margin, top=43, echo_timeout = 30000, lenght=14.8, width=15, l=0):
         self.echo = Pin(echo, Pin.IN)
         self.trigger = Pin(trigger, Pin.OUT)
+        self.margin = margin
         self.echo_timeout = echo_timeout
         self.top = top
         self.lenght = lenght
         self.width = width
         self.l = l
-
+        
+    def get_distance(self):
         self.trigger.off()
         time.sleep_us(5)
         self.trigger.on()
@@ -24,20 +23,31 @@ class Ultrasonico:
         self.distance = 343.2*duration/20000 #cm
 
     def begin(self):
-        start = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l #litros para calibrar
-        return start
-
-    def liters(self, ref, margin):
-        read = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l 
-        if((read > ref+margin) or (read < ref-margin)):
+        self.start = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l #litros para calibrar
+        return self.start
+    
+    def liters(self, ref, lenght=14.8, width=15, l=0):
+        read = (((lenght*width)*(self.top-self.get_distance()))*0.001)+l #litros para calibrar
+        if((read > ref+self.margin) or (read < ref-self.margin)):
             self.volumen = read
         else:
             self.volumen = ref
         return self.volumen #14.8, 15, 43
     
-    def percent(self):
-        percent = self.liters()*100/self.top
+    def on_off(self, ht, volumen):
+        value = volumen
+        if((value > value+ht)):
+            self.state = 1
+        elif((value < value-ht)):
+            self.state = 0
+        return self.state
+
+    def percent(self, liters):
+        percent = liters()*100/self.top
         return percent
+    # def percent(self):
+    #     self.percent1 = (self.volumen*100)/(self.top*15*15*0.001)
+    #     return self.percent1
 
 class Sensor_switch:
 
@@ -56,7 +66,6 @@ class Caudalimetro:
         self.uart.init(115200, bits=8, parity=None, stop=1)
         self.freq = 0
         self.ltprh = 0
-        self.accumulated = 0
         self.get_freq()
 
     def get_freq(self):
@@ -93,7 +102,7 @@ class Bomba:
         self.error = 0
         self.error1 = 0
         self.error2 = 0
-
+        #Constantes proporcional, integral y derivativa
         self.Kp = 1
         self.Ki = 3
         self.Kd = 0.05
@@ -102,21 +111,26 @@ class Bomba:
     def on_pid(self, set_point, procces_v):
         self.sp = set_point
         self.error = self.sp - procces_v
-        
+        #Ecuación de diferencias(transformada Z de la ecuacion del control PID)
         self.cv = self.cv1 + (self.Kp + self.Kd / self.Tm) * self.error + (-self.Kp + self.Ki * self.Tm - 2 * self.Kd / self.Tm) * self.error1 + (self.Kd / self.Tm) * self.error2
         self.cv1 = self.cv
         self.error2 = self.error1
         self.error1 = self.error
 
-        if self.cv > 360:
-            self.cv = 360
+        if self.cv > 10000:
+            self.cv = 10000
         if self.cv < 8:
             self.cv = 8
         
-        self.pwm.duty_u16(int(self.cv * (65535 / 360)))
+        self.pwm.duty_u16(int(self.cv * (65535 / 10000)))
         
     def off(self):
         self.pwm.duty(0)
+        self.cv = 0
+        self.cv1 = 0
+        self.error = 0
+        self.error1 = 0
+        self.error2 = 0
 
     def get_cv(self):
         return self.cv
@@ -132,13 +146,13 @@ class MAX6675:
         :param so: SO (data) pin, must be configured as Pin.IN
         """
         # Thermocouple
-        self._sck = sck
-        self._sck.value(0)
+        self.sck = Pin(sck, Pin.IN)
+        self.sck.value(0)
 
-        self._cs = cs
-        self._cs.value(1)
+        self.cs = Pin(cs, Pin.OUT)
+        self.cs.value(1)
 
-        self._so = so
+        self._so = Pin(so, Pin.IN)
         self._so.value(0)
 
         self._last_measurement_start = 0
