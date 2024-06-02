@@ -39,11 +39,11 @@ class Ultrasonico():
             self.volumen = 0
         return self.volumen #14.8, 15, 43
     
-    def on_off(self, ht, volumen):
+    def on_off(self, ht, volumen, sp):
         value = volumen
-        if((value > value+ht)):
+        if((value > sp+ht)):
             self.state = 1
-        elif((value < value-ht)):
+        elif((value < sp-ht)):
             self.state = 0
         return self.state
 

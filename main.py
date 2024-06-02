@@ -37,7 +37,7 @@ display = oled.Display(sck=Pin(3),
 sp1_temp = 50
 sp2_temp = 25
 sp_caudal = 220 #lt/hr
-sp_nivel = 8
+sp_nivel = 9.5
 
 ult1=ultrasonic_1.begin()
 ult2=ultrasonic_2.begin()
@@ -141,7 +141,7 @@ def set_display():
     display.data_logic(100, 192, 'Valv', valv)
 
 #while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
- #   display.error(10, 10, 'Ambos tanques llenos')
+#   display.error(10, 10, 'Ambos tanques llenos')
 
 while True:
     time.sleep(0.1)
@@ -150,7 +150,7 @@ while True:
     set_display()
     '''
     if((tempe2 <= sp2_temp) and (hz2t2 == 1)):
-        if(ultrasonic_1.on_off() == 1):
+        if(ultrasonic_1.on_off(0.2, ult1, sp_nivel) == 1):
             pass
             bomba.on_pid()
             bomba.on_pid(set_point=sp_caudal, procces_v=caudal)
@@ -169,6 +169,6 @@ while True:
     else:
         display.error(10, 10, 'Tanque 2 caliente o vacio')'''
     
-   
+
     print("a")
 
