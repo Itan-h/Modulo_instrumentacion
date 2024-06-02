@@ -20,10 +20,11 @@ class Ultrasonico():
         self.trigger.off()
 
         duration = machine.time_pulse_us(self.echo, 1, self.echo_timeout)
-        self.distance = 343.2*duration/20000 #cm
+        distance = 343.2*duration/20000 #cm
+        return distance
 
     def begin(self):
-        self.start = (((self.lenght*self.width)*(self.top-self.distance))*0.001)+self.l #litros para calibrar
+        self.start = (((self.lenght*self.width)*(self.top-self.get_distance()))*0.001)+self.l #litros para calibrar
         return self.start
     
     def liters(self, ref, lenght=14.8, width=15, l=0.7, c = 0.5):
@@ -60,8 +61,8 @@ class Sensor_switch:
 
     def state(self):
         input = not(self.sensor.value())
-        time.sleep_ms(600)
-        input = not(self.sensor.value())
+        '''time.sleep_ms(600)
+        input = not(self.sensor.value())'''
         return input
 
 class Caudalimetro:
@@ -96,6 +97,25 @@ class Trasductor_digital:
 
     def get_state(self):
         return self.pin.value()
+    
+class valvula:
+    def __init__(self,pin,pin2):
+        self.valvula1=Pin(pin, Pin.OUT)
+        self.valvula2=Pin(pin2, Pin.OUT)
+        self.state=False
+    def on(self):
+        self.valvula1.on()
+        time.sleep(0.3)
+        self.valvula1.off()
+        self.state=True
+    def off(self):
+        self.valvula2.on()
+        time.sleep(0.3)
+        self.valvula2.off()
+        self.state=False
+    def get_state(self):
+        return self.state
+
 
 class Bomba:
     def __init__(self, pin):
@@ -150,11 +170,11 @@ class MAX6675:
         :param so: SO (data) pin, must be configured as Pin.IN
         """
         # Thermocouple
-        self.sck = Pin(sck, Pin.OUT)
-        self.sck.value(0)
+        self._sck = Pin(sck, Pin.OUT)
+        self._sck.value(0)
 
-        self.cs = Pin(cs, Pin.OUT)
-        self.cs.value(1)
+        self._cs = Pin(cs, Pin.OUT)
+        self._cs.value(1)
 
         self._so = Pin(so, Pin.IN)
         self._so.value(0)

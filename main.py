@@ -4,34 +4,34 @@ from extras import BlynkLib, oled, rotary_irq
 import network, urequests, time, machine
 #-----------------------------------------------------------------------------------------------
 #caudal
-valve = s.Trasductor_digital(4)
-sensor_caudal = s.Caudalimetro(9)
-bomba = s.Bomba(15)
+valve = s.valvula(5,6)
+#sensor_caudal = s.Caudalimetro(44,43)
+bomba = s.Bomba(2)
 #temperatura
-max1 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 1
-max2 = s.MAX6675(sck=Pin(1), so=Pin(1), cs=Pin(1))  # Sensor 2
-resistencia = s.trasductor_digital(3)
+max1 = s.MAX6675(42, 8, 15)  # Sensor 1
+max2 = s.MAX6675(40,39,41)  # Sensor 2
+resistencia = s.Trasductor_digital(4)
 #nivel
-ultrasonic_1 = s.Ultrasonico(12, 13, 0.1)
-ultrasonic_2 = s.Ultrasonico(12, 13, 0.1)
-hzt1_tanque1 = s.Sensor_switch(6)
-hzt2_tanque1 = s.Sensor_switch(7)
-hzt1_tanque2 = s.Sensor_switch(8)
-hzt2_tanque2 = s.Sensor_switch(9)
+ultrasonic_1 = s.Ultrasonico(17, 18, 0.1)
+ultrasonic_2 = s.Ultrasonico(37, 36, 0.1)
+hzt1_tanque1 = s.Sensor_switch(16)
+hzt2_tanque1 = s.Sensor_switch(38)
+hzt1_tanque2 = s.Sensor_switch(35)
+hzt2_tanque2 = s.Sensor_switch(0)
 
-btn = Pin(18, Pin.IN, Pin.PULL_UP)#boton del encoder
-encoder = rotary_irq.RotaryIRQ(pin_num_clk=21,
-                pin_num_dt=19,
+btn = Pin(46, Pin.IN, Pin.PULL_UP)#boton del encoder
+encoder = rotary_irq.RotaryIRQ(pin_num_clk=13,
+                pin_num_dt=14,
                 min_val=0,
-                max_val=25,
+                max_val=4,
                 reverse=True,
                 range_mode=rotary_irq.RotaryIRQ.RANGE_WRAP)
 
-display = oled.Display(sck=Pin(18), 
-                       mosi=Pin(23),
-                       reset=Pin(5,Pin.OUT),
-                       dc=Pin(19,Pin.OUT),
-                       backlight=Pin(26,Pin.OUT), 
+display = oled.Display(sck=Pin(3), 
+                       mosi=Pin(9),
+                       reset=Pin(10,Pin.OUT),
+                       dc=Pin(11,Pin.OUT),
+                       cs=Pin(12,Pin.OUT), 
                        id=2)
 
 sp1_temp = 50
@@ -41,6 +41,7 @@ sp_nivel = 8
 
 ult1=ultrasonic_1.begin()
 ult2=ultrasonic_2.begin()
+
 def measuring():
     global tempe1
     global tempe2
@@ -58,7 +59,7 @@ def measuring():
     tempe2=max2.read()
     ult1 = ultrasonic_1.liters(ult1)
     ult2 = ultrasonic_2.liters(ult2)
-    caudal=sensor_caudal.get_lthr()
+    #caudal=sensor_caudal.get_lthr()
     hz1t1 = hzt1_tanque1.state()
     hz2t1 = hzt2_tanque1.state()
     hz1t2 = hzt1_tanque2.state()
@@ -67,8 +68,8 @@ def measuring():
     valv = valve.get_state()
 
 # WiFi credentials
-ssid = 'POCO X4 GT'
-password = '234567890'
+ssid = 'IZZI-F0EC'
+password = '63emkXM3fzrfT2c7fy'
 # ThingSpeak API key y URL
 thingspeak_api_key = 'FD2XVQKL2G0RA56X'
 thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_key + "&field1=0"
@@ -126,26 +127,28 @@ def blink():
 #     pass
 
 def set_display():
-    display.data_discrete(5, 5, 178, 236, 93, "Temperatura 1:", str(tempe1))
-    display.data_discrete(5, 55, 178, 236, 93, "Temperatura 2:", str(tempe2))
-    display.data_discrete(5, 105, 178, 236, 93, "Ultrasonico 1:", str(ult1))
-    display.data_discrete(5, 155, 178, 236, 93, "Ultrasonico 2:", str(ult2))
+    display.data_discrete(10, 0, "Temperatura 1:", tempe1)
+    display.data_discrete(10, 32, "Temperatura 2:", tempe2)
+    display.data_discrete(10, 64, "Ultrasonico 1:", ult1)
+    display.data_discrete(10, 96, "Ultrasonico 2:", ult2)
+    #display.data_discrete(5, 155, "cdl:", caudal)
 
-    display.data_logic(5, 205, 'H1t1', hz1t1)
-    display.data_logic(105, 205, 'H2t1', not(hz2t1))
-    display.data_logic(200, 205, 'H1t2', hz1t2)
-    display.data_logic(5, 255, 'H2t2', not(hz2t2))
-    display.data_logic(105, 255, 'Rest', res)
-    display.data_logic(200, 255, 'Valv', valv)
+    display.data_logic(10, 128, 'H1t1', hz1t1)
+    display.data_logic(100, 128, 'H2t1', not(hz2t1))
+    display.data_logic(10, 160, 'H1t2', hz1t2)
+    display.data_logic(100, 160, 'H2t2', not(hz2t2))
+    display.data_logic(10, 192, 'Rest', res)
+    display.data_logic(100, 192, 'Valv', valv)
 
-while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
-    display.error(10, 10, 'Ambos tanques llenos')
+#while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
+ #   display.error(10, 10, 'Ambos tanques llenos')
 
 while True:
-    time.sleep(0.25)
+    time.sleep(0.1)
     measuring()
     blink()
     set_display()
+    '''
     if((tempe2 <= sp2_temp) and (hz2t2 == 1)):
         if(ultrasonic_1.on_off() == 1):
             pass
@@ -164,4 +167,8 @@ while True:
                     valve.set_state(0)
 
     else:
-        display.error(10, 10, 'Tanque 2 caliente o vacio')
+        display.error(10, 10, 'Tanque 2 caliente o vacio')'''
+    
+   
+    print("a")
+

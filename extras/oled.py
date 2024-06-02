@@ -18,13 +18,13 @@ import vga1_bold_16x32 as font2
 class Display():
     def __init__(self, sck, mosi, miso=None, reset=None, dc=None, backlight=None, cs=None,id = 2, baudrate = 30000000, polarity = 1, phase = 1, bits = 8, firstbit = 0):
         self.tft = st7789.ST7789(SPI(id, baudrate = baudrate, polarity = polarity, phase = phase, bits = bits, firstbit = firstbit, sck=sck, mosi = mosi, miso=miso),
-                    240, 240, dc = dc, reset = reset,
-                    backlight = backlight, rotation = 1)
+                    240, 320, dc = dc, reset = reset,
+                    cs = cs, rotation = 1)
         
         self.tft.init()
     
-    def data_discrete(self, x, y,label, value):
-        self.tft.text(font1, " "+label+ f"{value} ", x, y, st7789.WHITE, st7789.RED)
+    def data_discrete(self, x, y,label, value, bg=st7789.BLACK):
+        self.tft.text(font1, " "+label+ f"{value} ", x, y, st7789.WHITE, bg)
 
     def data_logic(self, x, y, label, state):
         if state == 1:
