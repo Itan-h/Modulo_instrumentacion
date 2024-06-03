@@ -1,6 +1,6 @@
 from machine import Pin
 import sensores as s
-from extras import BlynkLib, oled, rotary_irq
+from extras import BlynkLib_mp, oled, rotary_irq
 import network, urequests, time, machine
 #-----------------------------------------------------------------------------------------------
 #caudal
@@ -76,7 +76,7 @@ thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_k
 # Blynk credentials
 auth_blynk = "610DmxAtbBJc9c2GVez6WD7DjIuzm1dE"
 # Initialize Blynk
-blynk = BlynkLib.Blynk(auth_blynk)
+blynk = BlynkLib_mp.Blynk(auth_blynk)
 # Connect to WiFi
 red = network.WLAN(network.STA_IF)
 red.active(True)
