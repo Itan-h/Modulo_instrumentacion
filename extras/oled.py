@@ -31,6 +31,11 @@ class Display():
             self.tft.text(font2, " "+label+" ", x+1, y+1, st7789.WHITE,st7789.color565(2, 186, 51))
         else:
             self.tft.text(font2, " "+label+" ", x+1, y+1, st7789.WHITE,st7789.RED)
+    def graph(self, x1, y1, x2, y2, color=st7789.BLUE):
+            self.tft.line(x1,y1,x2,y2,color)
+            
+    def oled_clear(self):
+        self.tft.fill(st7789.BLACK)
 
     def error(self, x, y, error):
         self.tft.fill(st7789.BLACK)

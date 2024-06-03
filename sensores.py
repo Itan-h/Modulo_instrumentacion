@@ -39,11 +39,11 @@ class Ultrasonico():
             self.volumen = 0
         return self.volumen #14.8, 15, 43
     
-    def on_off(self, ht, volumen):
+    def on_off(self, ht, volumen,sp):
         value = volumen
-        if((value > value+ht)):
+        if((value > sp+ht)):
             self.state = 1
-        elif((value < value-ht)):
+        elif((value < sp-ht)):
             self.state = 0
         return self.state
 
@@ -103,16 +103,19 @@ class valvula:
         self.valvula1=Pin(pin, Pin.OUT)
         self.valvula2=Pin(pin2, Pin.OUT)
         self.state=False
+
     def on(self):
         self.valvula1.on()
-        time.sleep(0.3)
+        time.sleep(0.27)
         self.valvula1.off()
         self.state=True
+
     def off(self):
         self.valvula2.on()
-        time.sleep(0.3)
+        time.sleep(0.27)
         self.valvula2.off()
         self.state=False
+        
     def get_state(self):
         return self.state
 
