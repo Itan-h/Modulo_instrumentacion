@@ -1,6 +1,6 @@
 from machine import Pin
 import sensores as s
-from extras import BlynkLib, oled, rotary_irq
+from extras import BlynkLib_mp, oled, rotary_irq
 import network, urequests, time, machine
 #-----------------------------------------------------------------------------------------------
 #caudal
