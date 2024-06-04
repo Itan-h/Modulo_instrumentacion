@@ -3,11 +3,11 @@ import st7789
 
 # FUENTES DISPONIBLES
 # import vga1_8x8 as font
-# import vga2_8x8 as font
+#import vga2_8x8 as font3
 # import vga1_8x16 as font           
 # import vga2_8x16 as font
 # import vga1_16x16 as font
-# import vga2_16x16 as font
+import vga2_16x16 as font3
 # import vga1_bold_16x16 as font
 # import vga2_bold_16x16 as font
 import vga1_16x32 as font1
@@ -23,8 +23,8 @@ class Display():
         
         self.tft.init()
     
-    def data_discrete(self, x, y,label, value, bg=st7789.BLACK):
-        self.tft.text(font1, " "+label+ f"{value} ", x, y, st7789.WHITE, bg)
+    def data_discrete(self, x, y,label, value, unit=" ", bg=st7789.BLACK):
+        self.tft.text(font1, " "+label+ f"{value} "+unit, x, y, st7789.WHITE, bg)
 
     def data_logic(self, x, y, label, state):
         if state == 1:
@@ -36,6 +36,9 @@ class Display():
             
     def oled_clear(self):
         self.tft.fill(st7789.BLACK)
+        
+    def label(self, x, y, label, color=st7789.WHITE):
+        self.tft.text(font3,label ,x ,y ,color)
 
     def error(self, x, y, error):
         self.tft.fill(st7789.BLACK)
