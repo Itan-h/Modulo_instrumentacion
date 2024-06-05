@@ -3,7 +3,8 @@ import sensores as s
 from extras import BlynkLib_mp, oled, rotary_irq
 import network, urequests, time, machine
 import st7789
-#-----------------------------------------------------------------------------------------------
+import _thread as th
+
 #caudal
 valve = s.valvula(5,6)
 sensor_caudal = s.Caudalimetro(44,43)
@@ -46,7 +47,7 @@ temp2_ant=0
 
 activation=False
 count=10
-encoder.set(value=1)
+encoder.set(value=3)
 
 ult1=ultrasonic_1.begin()
 ult2=ultrasonic_2.begin()
@@ -75,10 +76,10 @@ def measuring():
     hz2t2 = hzt2_tanque2.state()
     res = resistencia.get_state()
     valv = valve.get_state()
-'''
+
 # WiFi credentials
-ssid = 'Ingrid Zoe'
-password = 'Ingrid08'
+ssid = 'Great'
+password = 'Sky_Five'
 # ThingSpeak API key y URL
 thingspeak_api_key = 'OEZ2DZM0LU0760LA'
 thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_key + "&field1=0"
@@ -93,15 +94,15 @@ red.connect(ssid, password)
 
 while not red.isconnected():
     print("conectando")
-    display.data_discrete(10, 132, "conectando...", 0)
+    display.label(10,132,"CONECTANDO...", st7789.GREEN)
     pass
     display.oled_clear()
 
 print('Conexión correcta')
 print(red.ifconfig())
 
-ultima_peticion = 0
-intervalo_peticiones = 10
+#ultima_peticion = 0
+#intervalo_peticiones = 10
 
 def reconectar():
     display.data_discrete(10, 132, "desconectado...", 0)
@@ -117,33 +118,34 @@ def blink():
     global caudal
     global ultima_peticion
     global intervalo_peticiones
-    try:
-        if (time.time() - ultima_peticion) > intervalo_peticiones:
+    while True:
+        time.sleep(2)
+        try:
+            #if (time.time() - ultima_peticion) > intervalo_peticiones:
             t1=round(tempe1, 1)
             t2=round(tempe2, 1)
             u1=round(ult1, 1)
             u2=round(ult2, 1)
             cl=round(caudal, 1)
-            
+                
             # Actualizar ThingSpeak
             thingspeak_url_update = thingspeak_url + "&field1=" + str(t1) + "&field2=" + str(t2) + "&field3=" + str(u1) + "&field4=" + str(u2) + "&field5=" + str(cl)
             respuesta_thingspeak = urequests.get(thingspeak_url_update)
             print("Respuesta ThingSpeak:", respuesta_thingspeak.status_code)
             respuesta_thingspeak.close()
-            
+                
             # Actualizar Blynk
-            
+            '''
             blynk.virtual_write(0, t1)  # Virtual pin 0 para temperatura1
             blynk.virtual_write(1, t2)   # Virtual pin 1 para temperatura2
             blynk.virtual_write(2, u1)  # Virtual pin 2 para ultrasonico1
             blynk.virtual_write(3, u2)  # Virtual pin 3 para ultrasonico2
             blynk.virtual_write(4, cl)  # Virtual pin 4 para caaudal
-            ultima_peticion = time.time()
-                
+            ultima_peticion = time.time()'''
 
-    except OSError as e:
-        reconectar()
-'''
+        except OSError as e:
+            reconectar()
+
 # while((max1.error() == 1) or (max2.error() == 1)): #error en el sensor 
 #     pass
 
@@ -213,7 +215,7 @@ def graphic_temp2():
 def display_selection():
     if encoder.value()==1:
         set_display()
-    elif encoder.value()==0 or encoder.value()==2 or encoder.value()== 4 or encoder.value()==6:
+    elif encoder.value()%2==0:
         display.oled_clear()
     elif encoder.value()==3:
         graphic_caudal()
@@ -225,8 +227,9 @@ def display_selection():
 while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
     display.error(10, 10, 'Ambos tanques llenos')
 
+th.start_new_thread(blink, ())
+
 while True:
-    time.sleep(0.1)
     count+=1 
     if count==320: count=10
     measuring()
@@ -250,3 +253,4 @@ while True:
         bomba.off()
         resistencia.set_state(0)
         activation=True
+    time.sleep(0.1)
