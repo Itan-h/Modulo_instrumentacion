@@ -10,8 +10,8 @@ valve = s.valvula(5,6)
 sensor_caudal = s.Caudalimetro(44,43)
 bomba = s.Bomba(1)
 #temperatura
-max2 = s.MAX6675(42, 8, 15)  # Sensor 1
-max1 = s.MAX6675(40,39,41)  # Sensor 2
+max2 = s.MAX6675(42, 8, 15)  # Sensor 2
+max1 = s.MAX6675(40,39,41)  # Sensor 1
 resistencia = s.Trasductor_digital(4)
 #nivel
 ultrasonic_1 = s.Ultrasonico(17, 18, 0.1)
@@ -52,8 +52,10 @@ ult1=ultrasonic_1.begin()
 ult2=ultrasonic_2.begin()
 
 # WiFi credentials
-ssid = 'Great'
-password = 'Sky_Five'
+ssid_1 = 'TecNM-ITOaxaca'
+password_1 = '#SomosTecNM'
+ssid_2="Ingrid Zoe"
+password_2="Ingrid08"
 # ThingSpeak API key y URL
 thingspeak_api_key = 'OEZ2DZM0LU0760LA'
 thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_key + "&field1=0"
@@ -61,8 +63,7 @@ thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_k
 auth_blynk = 'tRQzMwfAls9yDoETDjk-INun-DJzwVxV'
 
 while btn.value():
-    display.label(80,20, "ACTIVAR WIFI?", st7789.CYAN)
-    display.label(80,40, "RED: "+ssid, st7789.CYAN)
+    display.label(70,20, "ACTIVAR WIFI?", st7789.CYAN)
     wifi_on=encoder.value()%2
     if wifi_on==0:
         display.label(40,160, "SI", st7789.GREEN)
@@ -71,10 +72,22 @@ while btn.value():
         display.label(40,160, "SI")
         display.label(220,160, "NO", st7789.GREEN)
     time.sleep(0.1)
-
+time.sleep(1)
 display.oled_clear()
 
 if wifi_on==0:
+    while btn.value():
+        display.label(110,20, "RED", st7789.CYAN)
+        wifi_red=encoder.value()%2
+        if wifi_red==0:
+            display.label(10,150, ssid_1, st7789.GREEN)
+            display.label(10,180, ssid_2)
+        else:
+            display.label(10,150, ssid_1)
+            display.label(10,180, ssid_2, st7789.GREEN)
+        time.sleep(0.1)
+    display.oled_clear()
+
     display.label(10,100,"Continuando online", st7789.GREEN)
     time.sleep(1)
     display.oled_clear()
@@ -83,10 +96,13 @@ if wifi_on==0:
     # Connect to WiFi
     red = network.WLAN(network.STA_IF)
     red.active(True)
-    red.connect(ssid, password)
+    if wifi_red==0:
+        red.connect(ssid_1, password_1)
+    else:
+        red.connect(ssid_2, password_2)
     time1=time.time()
+    
     while not red.isconnected():
-        print("conectando")
         display.label(10,100,"Conectando...", st7789.GREEN)
         display.oled_clear()
         if time1-time.time()<-20:
@@ -246,9 +262,12 @@ def display_selection():
 
 while((hzt1_tanque1.state() == 1) and (hzt1_tanque2.state() == 1)): 
     display.error(10, 10, 'Ambos tanques llenos')
-if wifi_on:
+
+if wifi_on==0:
     th.start_new_thread(blink, ())
+
 encoder.set(value=3)
+
 while True:
     count+=1 
     if count==320: count=10
