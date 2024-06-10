@@ -36,10 +36,10 @@ display = oled.Display(sck=Pin(3),
                        cs=Pin(12,Pin.OUT), 
                        id=2)
 
-sp1_temp = 40 #°C
-sp2_temp = 30 #°C
+sp1_temp = 45 #°C
+sp2_temp = 25 #°C
 sp_caudal = 220 #lt/hr
-sp_nivel = 8.6 #lt
+sp_nivel = 9 #lt
 
 caudal_ant=0
 temp1_ant=0
@@ -54,8 +54,8 @@ ult2=ultrasonic_2.begin()
 # WiFi credentials
 ssid_1 = 'TecNM-ITOaxaca'
 password_1 = '#SomosTecNM'
-ssid_2="Ingrid Zoe"
-password_2="Ingrid08"
+ssid_2="---"
+password_2="---"
 # ThingSpeak API key y URL
 thingspeak_api_key = 'OEZ2DZM0LU0760LA'
 thingspeak_url = "https://api.thingspeak.com/update?api_key=" + thingspeak_api_key + "&field1=0"
@@ -276,6 +276,7 @@ while True:
     display_selection()
     
     if tempe2 <= sp2_temp and not ultrasonic_1.on_off(0.2,ult1,sp_nivel):
+        resistencia.set_state(0)
         bomba.on_pid(set_point=sp_caudal, procces_v=caudal)
 
     elif tempe1 <= sp1_temp and ultrasonic_1.on_off(0.2,ult1,sp_nivel):
@@ -296,5 +297,10 @@ while True:
         bomba.off()
         resistencia.set_state(0)
         activation=True
-        
+    
+    else:
+        bomba.off()
+        resistencia.set_state(0)
+        activation=False
+
     time.sleep(0.1)
